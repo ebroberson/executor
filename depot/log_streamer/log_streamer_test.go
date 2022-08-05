@@ -566,9 +566,14 @@ var _ = Describe("LogStreamer", func() {
 			}
 		})
 
-		AfterEach(func(done Done) {
-			defer close(done)
-			waitGroup.Wait()
+		AfterEach(func() {
+			done := make(chan interface{})
+			timeout := 5
+			go func() {
+				defer close(done)
+				waitGroup.Wait()
+			}()
+			Eventually(done, timeout).Should(BeClosed())
 		})
 
 		It("does not trigger data races", func() {
